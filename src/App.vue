@@ -1,101 +1,71 @@
 <template>
   <div class="app">
-        <header class="app-header">
+        <!--<header class="app-header">
           <ui5-shellbar primary-title="UI5 Web Components Vue Sample Application" :logo='logo'>
           </ui5-shellbar>
-        </header>
+        </header>-->
         <section class="app-content">
-          <div class="create-todo-wrapper">
+          <!--<div class="create-todo-wrapper">
             <ui5-input placeholder="My Todo ..." ref="todoInput" class="add-todo-element-width" id="add-input"></ui5-input>
             <ui5-datepicker format-pattern="dd/MM/yyyy" class="add-todo-element-width" ref="todoDeadline" id="date-picker"></ui5-datepicker>
             <ui5-button class="add-todo-element-width" ref="addButton" design="Emphasized" @click="handleAdd">Add Todo</ui5-button>
-          </div>
+          </div>-->
 
           <div class="list-todos-wrapper">
-            <TodoList :todos="todos" @selection-change="handleDone"
-            @item-deleted="handleRemove"
-            @item-edit="handleEdit">
-            </TodoList>
+            <!--<TodoList :todos="todos" @selection-change="handleDone"
+              @item-deleted="handleRemove"
+              @item-edit="handleEdit">
+            </TodoList>-->
 
-            <ui5-panel header-text="Completed tasks">
+            <ui5-list id="infiniteScrollEx" ref="list" style="height: calc( 100vh - 150px )" growing="Scroll" v-on:load-more="handleLoadMore">
+              <ui5-li
+                v-for="(todo) in todos" :key="todo.id" :datakey="todo.id">
+                  {{todo.text}}
+              </ui5-li>
+              <ui5-li>
+                Loading
+              </ui5-li>
+            </ui5-list>
+
+            <!--<ui5-panel header-text="Completed tasks">
               <TodoList :todos="doneTodos" @selection-change="handleUndone"
               @item-deleted="handleRemove"
               @item-edit="handleEdit">
               </TodoList>
-            </ui5-panel>
+            </ui5-panel>-->
           </div>
         </section>
-        <ui5-dialog header-text="Edit Todo item" ref="editDialog">
-          <div class="dialog-content">
-            <div class="edit-wrapper">
-                <ui5-label>Title:</ui5-label>
-                <ui5-textarea class="title-textarea"
-                  show-exceeded-text
-                  maxlength="24"
-                  :value="todoBeingEdittedText"
-                  ref="titleEditInput">
-                </ui5-textarea>
-            </div>
-
-            <div class="edit-wrapper date-edit-fields">
-                <ui5-label>Date:</ui5-label>
-                <ui5-datepicker format-pattern="dd/MM/yyyy" :value="todoBeingEdittedDate" ref="dateEditInput"></ui5-datepicker>
-            </div>
-          </div>
-            <div class="dialog-footer" data-ui5-slot="footer">
-              <ui5-button design="Transparent" @click="cancelEdits">Cancel</ui5-button>
-              <ui5-button design="Emphasized" @click="saveEdits">Save</ui5-button>
-            </div>
-        </ui5-dialog>
       </div>
 </template>
 
 <script>
 import Vue from "vue";
-import logo from './assets/logo.png';
-import '@webcomponents/custom-elements/custom-elements.min.js'
 import '@webcomponents/shadydom/shadydom.min.js'
-import "@ui5/webcomponents-base/dist/features/browsersupport/Edge";
 import '@ui5/webcomponents/dist/Title';
 import '@ui5/webcomponents/dist/Input';
 import '@ui5/webcomponents/dist/DatePicker';
 import '@ui5/webcomponents/dist/Button';
-import '@ui5/webcomponents/dist/Dialog';
 import '@ui5/webcomponents/dist/Panel';
 import '@ui5/webcomponents/dist/Label';
 import '@ui5/webcomponents/dist/TextArea';
-import '@ui5/webcomponents-fiori/dist/ShellBar';
-import './components/TodoList.vue';
+import "@ui5/webcomponents/dist/List.js"
+import "@ui5/webcomponents/dist/StandardListItem.js"
+
+const todos = []
+for (let i = 0; i <= 30; i++) {
+  todos.push(
+    {
+      text: "Buy milk",
+      id: `i-${i}`,
+      deadline: "30/7/2018",
+      done: false
+    })
+}
 
 let App = Vue.component("app", {
   data: function() {
     return {
-      todos: [
-        {
-          text: "Get some carrots",
-          id: "i1",
-          deadline: "27/7/2018",
-          done: false
-        },
-        {
-          text: "Do some magic",
-          id: "i2",
-          deadline: "22/7/2018",
-          done: false
-        },
-        {
-          text: "Go to the gym",
-          id: "i3",
-          deadline: "24/7/2018",
-          done: false
-        },
-        {
-          text: "Buy milk",
-          id: "i4",
-          deadline: "30/7/2018",
-          done: false
-        }
-      ],
+      todos: todos,
       doneTodos: [
         {
           text: "Eat some fruits",
@@ -103,101 +73,26 @@ let App = Vue.component("app", {
           deadline: "29/7/2018",
           done: true
         }
-      ],
-      logo,
-      todoBeingEdittedText: "",
-      todoBeingEdittedDate: "",
-      selectedEditTodo: ""
+      ]
     };
   },
   methods: {
-    handleAdd: function() {
-      this.todos = [...this.todos, {
-        text: this.$refs["todoInput"].value,
-        id: (this.todos.length + 1).toString(),
-        deadline: this.$refs["todoDeadline"].value,
-        done: false
-      }];
-    },
-    handleDone(event) {
-      const selectedItem = event.detail.selectedItems[0];
-      const selectedId = selectedItem.getAttribute("data-key");
-
-      const newlySelected = this.todos.filter(todo => {
-        return selectedId === todo.id.toString();
-      })[0];
-      newlySelected.done = true;
-      this.doneTodos.push(newlySelected);
-
-      this.todos = this.todos.filter(todo => {
-        return selectedId !== todo.id.toString();
-      });
-    },
-    handleUndone(event) {
-      const selectedItems = event.detail.selectedItems;
-      const selectedIds = selectedItems.map(item => item.getAttribute("data-key"));
-
-      const newlyDeselected = this.doneTodos.filter(todo => {
-        return selectedIds.indexOf(todo.id.toString()) === -1;
-      }).map(item => {
-        return { ...item, done: false };
-      });
-
-      this.doneTodos = this.doneTodos.filter(todo => {
-        return selectedIds.indexOf(todo.id.toString()) > -1;
-      });
-
-      this.todos = [...this.todos, ...newlyDeselected];
-    },
-    handleRemove(item) {
-      const filteredTodos = this.todos.filter(todo => todo.id.toString() !== item.id);
-      this.todos = filteredTodos;
-
-      const filteredDoneTodos = this.doneTodos.filter(todo => todo.id.toString() !== item.id);
-      this.doneTodos = filteredDoneTodos;
-    },
-    handleEdit(item) {
-      const matchedTodos = this.todos.filter(todo => todo.id.toString() === item.id);
-      let todoObj;
-
-      if (matchedTodos.length) { 
-        todoObj = matchedTodos[0];
-      } else {
-        todoObj = this.doneTodos.filter(todo => todo.id.toString() === item.id)[0];
-      }
-
-      this.todoBeingEdittedText = todoObj.text;
-      this.todoBeingEdittedDate = todoObj.deadline;
-      this.selectedEditTodo = todoObj.id;
-
-      this.$refs["editDialog"].open();
-    },
-    saveEdits() {
-      const edittedText = this.$refs["titleEditInput"].value;
-      const edittedDate = this.$refs["dateEditInput"].value;
-
-      this.todos = this.todos.map((todo) => {
-        if (todo.id === this.selectedEditTodo) {
-          todo.text = edittedText;
-          todo.deadline = edittedDate;
+    handleLoadMore() {
+      // eslint-disable-next-line
+      console.log('load-more')
+      setTimeout(() => {
+        // eslint-disable-next-line
+        const newItemsEndIndex = todos.length + 50
+        for (let i = todos.length; i <= newItemsEndIndex; i++) {
+          todos.push(
+            {
+              text: `n${i}`,
+              id: `n-${i}`,
+              deadline: "30/7/2018",
+              done: false
+            })
         }
-
-        return todo;
-      });
-
-      this.doneTodos = this.doneTodos.map((todo) => {
-        if (todo.id === this.selectedEditTodo) {
-          todo.text = edittedText;
-          todo.deadline = edittedDate;
-        }
-
-        return todo;
-      });
-
-      this.$refs["editDialog"].close();
-    },
-    cancelEdits() {
-      this.$refs["editDialog"].close();
+      }, 100)
     }
   }
 });

@@ -1,16 +1,18 @@
 <template>
-  <ui5-list id="todo-list" mode="MultiSelect" ref="list" @selectionChange="onSelectionChange">
-    <TodoItem v-for="(todo) in todos" :todo="todo" :key="todo.id" :datakey="todo.id"
-    @item-deleted="onItemDeleted"
-    @item-edit="onItemEdit">
-    </TodoItem>
+  <!--<ui5-list id="todo-list" style="height: calc( 100vh - 150px )" growing="Button" v-on:load-more="handleLoadMore">-->
+  <ui5-list id="infiniteScrollEx" ref="list" style="height: calc( 100vh - 150px )" growing="Scroll">
+    <ui5-li
+      v-for="(todo) in todos" :key="todo.id" :datakey="todo.id">
+        {{todo.text}}
+    </ui5-li>
   </ui5-list>
 </template>
 
 <script>
-import Vue from "vue";
-import './TodoItem.vue';
-import "@ui5/webcomponents/dist/List";
+import Vue from "vue"
+// import "@ui5/webcomponents/dist/List"
+import "@ui5/webcomponents/dist/List.js"
+import "@ui5/webcomponents/dist/StandardListItem.js"
 
 
 let TodoList = Vue.component('TodoList', {
@@ -24,6 +26,10 @@ let TodoList = Vue.component('TodoList', {
     },
     onItemEdit(event) {
       this.$emit('item-edit', event);
+    },
+    handleLoadMore() {
+      // eslint-disable-next-line
+      console.log('load-more')
     }
   }
 });

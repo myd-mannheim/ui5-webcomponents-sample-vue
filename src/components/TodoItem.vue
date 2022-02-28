@@ -2,10 +2,10 @@
   <ui5-li-custom :data-key="datakey" :selected="todo.done">
     <div class="li-content">
       <span class="li-content-text">{{todo.text}} - finish before: {{todo.deadline}}</span>
-      <div class="li-content-actions">
+      <!--<div class="li-content-actions">
         <ui5-button class="edit-btn" @click="onEditPress">Edit</ui5-button>
         <ui5-button design="Negative" @click="onDeletePress">Delete</ui5-button>
-      </div>
+      </div>-->
     </div>
   </ui5-li-custom>
 </template>
